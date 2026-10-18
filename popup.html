@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Note-o-Web</title>
+<style>
+  body{width:330px;margin:0;font:13px system-ui,"Segoe UI",sans-serif;color:#111;background:#fff}
+  header{padding:12px 14px;border-bottom:1px solid #e5e7eb}
+  h1{font-size:15px;margin:0 0 2px}
+  .url{color:#6b7280;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  section{padding:10px 14px}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin:0 0 6px}
+  .colors{display:flex;gap:8px}
+  .colors button{width:30px;height:30px;border-radius:4px;border:1px solid rgba(0,0,0,.2);cursor:pointer;
+    box-shadow:1px 2px 4px rgba(0,0,0,.2)}
+  .colors button:hover{transform:translateY(-2px)}
+  ul{list-style:none;margin:0;padding:0;max-height:220px;overflow:auto}
+  li{display:flex;gap:8px;align-items:flex-start;padding:6px 6px;border-radius:6px;cursor:pointer}
+  li:hover{background:#f3f4f6}
+  .chip{flex:none;width:10px;height:10px;border-radius:50%;margin-top:3px}
+  .txt{flex:1;min-width:0}
+  .txt b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .txt small{color:#6b7280;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .empty,.na{color:#6b7280}
+  footer{padding:10px 14px;border-top:1px solid #e5e7eb}
+  footer a{color:#2563eb;cursor:pointer;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗒 Note-o-Web</h1>
+  <div class="url" id="url"></div>
+</header>
+<section id="na" class="na" hidden>Auf dieser Seite nicht verfügbar (nur http/https-Seiten).</section>
+<div id="main" hidden>
+  <section>
+    <h2>Neues Post-it</h2>
+    <div class="colors" id="colors"></div>
+  </section>
+  <section>
+    <h2>Auf dieser Seite</h2>
+    <ul id="list"></ul>
+    <div class="empty" id="empty" hidden>Noch nichts. Text markieren, um zu starten.</div>
+  </section>
+</div>
+<footer><a id="opts">Backup, Download &amp; Restore …</a></footer>
+<script src="shared.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Note-o-Web",
+  "version": "0.2.0",
+  "description": "Text auf Webseiten markieren, kommentieren und Post-its platzieren. Daten bleiben lokal, optional automatisches Cloud-Backup.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "identity", "alarms"],
+  "host_permissions": [
+    "https://api.dropboxapi.com/*",
+    "https://content.dropboxapi.com/*",
+    "https://www.googleapis.com/*",
+    "https://oauth2.googleapis.com/*",
+    "https://login.microsoftonline.com/*",
+    "https://graph.microsoft.com/*",
+    "https://*.sharepoint.com/*",
+    "https://*.files.1drv.com/*"
+  ],
+  "oauth2": {
+    "client_id": "DEINE_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/drive.appdata"]
+  },
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_title": "Note-o-Web",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["shared.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "new-postit": {
+      "suggested_key": { "default": "Ctrl+Shift+Y" },
+      "description": "Neues Post-it auf dieser Seite"
+    }
+  }
+}
