@@ -43,14 +43,20 @@ The cloud file lives in a private app folder of your own account, never your who
 
 > **Status:** Dropbox backup and restore are tested end to end. Google Drive and OneDrive are implemented the same way but have had less real-world testing. Feedback is welcome.
 
-## Install (from source)
+## Install
 
-The extension is not in the Chrome Web Store yet.
+The extension is not in the Chrome Web Store yet, so you load it manually. It takes a minute.
 
-1. Download or clone this repository
-2. Open `chrome://extensions` and switch on **Developer mode**
-3. Click **Load unpacked** and select the project folder
+1. Download `note-o-web-vX.Y.Z.zip` from the [latest release](https://github.com/Harveyhase68/note_o_web/releases/latest) and unzip it
+2. Open `chrome://extensions` and switch on **Developer mode** (top right)
+3. Click **Load unpacked** and select the unzipped folder (the one containing `manifest.json`)
 4. Pin the extension, open any `http(s)` page and select some text
+
+Keep the folder where it is: Chrome loads the extension from there. To update, unzip the new release over the old folder (or into a new one) and click the reload arrow on `chrome://extensions`.
+
+> Chrome does not allow installing `.crx` files from outside the Web Store, which is why the release is a plain ZIP.
+
+**From source:** clone this repository and load the project folder with **Load unpacked**. Same steps, no build needed.
 
 Works in Chrome and other Chromium browsers (Edge, Brave, …). Google Drive backup needs Chrome.
 
