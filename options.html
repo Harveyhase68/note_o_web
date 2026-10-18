@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Note-o-Web – Optionen</title>
+<title>Note-o-Web – Options</title>
 <style>
   body{max-width:720px;margin:32px auto;padding:0 16px;font:15px/1.5 system-ui,"Segoe UI",sans-serif;color:#111}
   h1{margin-bottom:4px}
@@ -11,7 +11,7 @@
   .stats{display:flex;gap:24px;flex-wrap:wrap}
   .stats div{font-size:13px;color:#6b7280}
   .stats b{display:block;font-size:22px;color:#111}
-  button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer}
+  button,select{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer}
   button.primary{background:#2563eb;border-color:#2563eb;color:#fff}
   button.danger{color:#b91c1c}
   button:disabled{opacity:.5;cursor:not-allowed}
@@ -31,62 +31,70 @@
 </head>
 <body>
 <h1>🗒 Note-o-Web</h1>
-<div class="muted">Alle Daten liegen lokal in deinem Browser. Es gibt keinen Server.</div>
+<div class="muted" data-i18n="opt.tagline"></div>
 
 <div class="card">
-  <h2>Übersicht</h2>
-  <div class="stats">
-    <div><b id="sPages">–</b>Seiten</div>
-    <div><b id="sHl">–</b>Markierungen</div>
-    <div><b id="sPi">–</b>Post-its</div>
-    <div><b id="sBytes">–</b>Speicher</div>
+  <div class="row" style="margin-top:0">
+    <label for="lang" data-i18n="opt.language"></label>
+    <select id="lang">
+      <option value="auto" data-i18n="opt.langAuto"></option>
+      <option value="en">English</option>
+      <option value="de">Deutsch</option>
+    </select>
   </div>
 </div>
 
 <div class="card">
-  <h2>Sichern &amp; Wiederherstellen</h2>
+  <h2 data-i18n="opt.overview"></h2>
+  <div class="stats">
+    <div><b id="sPages">–</b><span data-i18n="opt.pages"></span></div>
+    <div><b id="sHl">–</b><span data-i18n="opt.highlights"></span></div>
+    <div><b id="sPi">–</b><span data-i18n="opt.postits"></span></div>
+    <div><b id="sBytes">–</b><span data-i18n="opt.storage"></span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 data-i18n="opt.backupTitle"></h2>
   <div class="row">
-    <button class="primary" id="btnExport">⬇ Backup herunterladen (JSON)</button>
+    <button class="primary" id="btnExport" data-i18n="opt.download"></button>
   </div>
   <div class="row">
     <input type="file" id="file" accept="application/json,.json">
-    <label><input type="radio" name="mode" value="merge" checked> Zusammenführen</label>
-    <label><input type="radio" name="mode" value="replace"> Alles ersetzen</label>
-    <button id="btnRestore">⬆ Wiederherstellen</button>
+    <label><input type="radio" name="mode" value="merge" checked> <span data-i18n="opt.merge"></span></label>
+    <label><input type="radio" name="mode" value="replace"> <span data-i18n="opt.replace"></span></label>
+    <button id="btnRestore" data-i18n="opt.restore"></button>
   </div>
   <div class="msg" id="msg"></div>
 </div>
 
 <div class="card">
-  <h2>Automatisches Cloud-Backup</h2>
-  <div class="muted">Etwa eine Minute nach jeder Änderung wird automatisch gesichert, ohne dass du etwas drücken musst.
-  Die Datei liegt in einem privaten App-Ordner deines Cloud-Kontos. Es ist kein Server von uns beteiligt.
-  Wähle den aktiven Anbieter per Auswahlkreis.</div>
+  <h2 data-i18n="opt.cloudTitle"></h2>
+  <div class="muted" data-i18n="opt.cloudIntro"></div>
   <div id="providers"></div>
   <div class="row">
-    <button id="btnNow">☁ Jetzt sichern</button>
-    <button id="btnCloudRestore">☁ Aus Cloud wiederherstellen</button>
-    <span class="muted">(Modus siehe oben: Zusammenführen / Alles ersetzen)</span>
+    <button id="btnNow" data-i18n="opt.backupNow"></button>
+    <button id="btnCloudRestore" data-i18n="opt.cloudRestore"></button>
+    <span class="muted" data-i18n="opt.modeHint"></span>
   </div>
   <div class="msg" id="cmsg"></div>
   <div class="muted" id="cstatus"></div>
   <details class="muted" style="margin-top:10px">
-    <summary>Daten für die App-Registrierung</summary>
-    <div>Redirect-URL: <code id="redir"></code></div>
-    <div>Extension-ID: <code id="extid"></code></div>
-    <div>Schritt-für-Schritt-Anleitung: Datei <code>CLOUD-SETUP.md</code> im Projektordner.</div>
+    <summary data-i18n="opt.regData"></summary>
+    <div><span data-i18n="opt.redirect"></span> <code id="redir"></code></div>
+    <div><span data-i18n="opt.extId"></span> <code id="extid"></code></div>
+    <div data-i18n="opt.guide" data-i18n-html></div>
   </details>
 </div>
 
 <div class="card">
-  <h2>Hinweise</h2>
-  <div class="muted">Neues Post-it per Tastenkürzel, Vorschlag <kbd>Strg</kbd>+<kbd>Shift</kbd>+<kbd>Y</kbd>.
-  Das Kürzel lässt sich unter <b>chrome://extensions/shortcuts</b> frei ändern
-  (Adresse dort in die Adresszeile eingeben, Links dorthin sind aus Erweiterungen heraus gesperrt).</div>
-  <div class="row"><button class="danger" id="btnWipe">Alle Notizen löschen …</button></div>
+  <h2 data-i18n="opt.notes"></h2>
+  <div class="muted" data-i18n="opt.shortcut" data-i18n-html></div>
+  <div class="row"><button class="danger" id="btnWipe" data-i18n="opt.wipe"></button></div>
 </div>
 
 <script src="shared.js"></script>
+<script src="i18n.js"></script>
 <script src="backup.js"></script>
 <script src="options.js"></script>
 </body>

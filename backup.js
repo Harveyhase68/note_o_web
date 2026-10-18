@@ -49,11 +49,11 @@ globalThis.NOWBackup = (() => {
       code_challenge: challenge, code_challenge_method: 'S256', state
     });
     const resp = await chrome.identity.launchWebAuthFlow({ url, interactive: true });
-    if (!resp) throw new Error('Anmeldung abgebrochen.');
+    if (!resp) throw new Error(NOW.t('err.cancelled'));
     const u = new URL(resp);
     const err = u.searchParams.get('error');
     if (err) throw new Error(u.searchParams.get('error_description') || err);
-    if (u.searchParams.get('state') !== state) throw new Error('Ungültige Antwort (state).');
+    if (u.searchParams.get('state') !== state) throw new Error(NOW.t('err.badState'));
     return { code: u.searchParams.get('code'), verifier, redirect };
   }
 
@@ -70,20 +70,20 @@ globalThis.NOWBackup = (() => {
 
   async function connectOAuth(id, { authUrl, tokenUrl, clientIdKey, authExtra = {}, tokenExtra = {} }) {
     const cid = (await getCfg())[clientIdKey];
-    if (!cid) throw new Error('Bitte zuerst die Client-ID eintragen.');
+    if (!cid) throw new Error(NOW.t('err.needClientId'));
     const { code, verifier, redirect } = await authorize(authUrl, { client_id: cid, ...authExtra });
     const j = await tokenRequest(tokenUrl, {
       grant_type: 'authorization_code', code, redirect_uri: redirect,
       client_id: cid, code_verifier: verifier, ...tokenExtra
     });
-    if (!j.refresh_token) throw new Error('Kein Refresh-Token erhalten (App-Einstellungen prüfen).');
+    if (!j.refresh_token) throw new Error(NOW.t('err.noRefresh'));
     await setTokens(id, { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000 });
   }
 
   async function accessToken(id, { tokenUrl, clientIdKey, tokenExtra = {} }) {
     const cfg = await getCfg();
     const t = cfg.tokens?.[id];
-    if (!t) throw new Error('Nicht verbunden.');
+    if (!t) throw new Error(NOW.t('err.notConnected'));
     if (t.access && t.exp > Date.now() + 60000) return t.access;
     const j = await tokenRequest(tokenUrl, {
       grant_type: 'refresh_token', refresh_token: t.refresh, client_id: cfg[clientIdKey], ...tokenExtra
@@ -124,7 +124,7 @@ globalThis.NOWBackup = (() => {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + tok, 'Dropbox-API-Arg': JSON.stringify({ path: '/' + FILE }) }
       });
-      if (r.status === 409) throw new Error('In Dropbox liegt noch kein Backup.');
+      if (r.status === 409) throw new Error(NOW.t('err.noBackup', { name: 'Dropbox' }));
       return (await check(r)).text();
     }
   };
@@ -154,7 +154,7 @@ globalThis.NOWBackup = (() => {
         }));
         return;
       }
-      if (bytes.length > 60 * 1024 * 1024) throw new Error('Backup ist größer als 60 MB.');
+      if (bytes.length > 60 * 1024 * 1024) throw new Error(NOW.t('err.tooBig'));
       const s = await (await check(await fetch(ODBASE + '/createUploadSession', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
@@ -169,7 +169,7 @@ globalThis.NOWBackup = (() => {
     async download() {
       const tok = await accessToken('onedrive', OD);
       const r = await fetch(ODBASE + '/content', { headers: { Authorization: 'Bearer ' + tok } });
-      if (r.status === 404) throw new Error('In OneDrive liegt noch kein Backup.');
+      if (r.status === 404) throw new Error(NOW.t('err.noBackup', { name: 'OneDrive' }));
       return (await check(r)).text();
     }
   };
@@ -178,7 +178,7 @@ globalThis.NOWBackup = (() => {
   const gToken = async (interactive) => {
     const r = await chrome.identity.getAuthToken({ interactive });
     const t = typeof r === 'string' ? r : r?.token;
-    if (!t) throw new Error('Kein Google-Token erhalten.');
+    if (!t) throw new Error(NOW.t('err.noGoogleToken'));
     return t;
   };
   async function gFetch(url, opts = {}, retry = true) {
@@ -201,7 +201,7 @@ globalThis.NOWBackup = (() => {
     isConnected: (cfg) => !!cfg.google?.connected,
     async connect() {
       if ((chrome.runtime.getManifest().oauth2?.client_id || '').includes('DEINE_')) {
-        throw new Error('Google-Client-ID fehlt: bitte in manifest.json unter oauth2.client_id eintragen (siehe CLOUD-SETUP.md).');
+        throw new Error(NOW.t('err.googleClientMissing'));
       }
       await gToken(true);
       await setCfg({ google: { connected: true } });
@@ -232,7 +232,7 @@ globalThis.NOWBackup = (() => {
     },
     async download() {
       const id = await gFindId();
-      if (!id) throw new Error('In Google Drive liegt noch kein Backup.');
+      if (!id) throw new Error(NOW.t('err.noBackup', { name: 'Google Drive' }));
       return (await check(await gFetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`))).text();
     }
   };
@@ -244,6 +244,7 @@ globalThis.NOWBackup = (() => {
   function runBackup() {
     if (inflight) return inflight;
     inflight = (async () => {
+      await NOW.loadLang();
       const cfg = await getCfg();
       const prov = PROVIDERS[cfg.provider];
       if (!prov || !prov.isConnected(cfg)) return { skipped: true };
@@ -260,9 +261,10 @@ globalThis.NOWBackup = (() => {
   }
 
   async function restoreFromCloud(mode) {
+    await NOW.loadLang();
     const cfg = await getCfg();
     const prov = PROVIDERS[cfg.provider];
-    if (!prov || !prov.isConnected(cfg)) throw new Error('Kein Cloud-Anbieter verbunden.');
+    if (!prov || !prov.isConnected(cfg)) throw new Error(NOW.t('err.noProvider'));
     return NOW.applyBackup(JSON.parse(await prov.download()), mode);
   }
 

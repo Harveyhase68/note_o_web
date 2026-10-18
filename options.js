@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const t = (k, v) => NOW.t(k, v);
 
 function say(text, ok = true, target = 'msg') {
   const m = $(target);
@@ -21,8 +22,7 @@ async function refreshStats() {
 }
 
 const restoreMode = () => document.querySelector('input[name=mode]:checked').value;
-const confirmReplace = () => restoreMode() !== 'replace' ||
-  confirm('Alle vorhandenen Notizen werden durch das Backup ersetzt. Fortfahren?');
+const confirmReplace = () => restoreMode() !== 'replace' || confirm(t('msg.confirmReplace'));
 
 // ---- Datei-Export -------------------------------------------------------
 $('btnExport').addEventListener('click', async () => {
@@ -35,23 +35,23 @@ $('btnExport').addEventListener('click', async () => {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
-  say('Backup wurde heruntergeladen.');
+  say(t('msg.exported'));
 });
 
 // ---- Datei-Restore ------------------------------------------------------
 $('btnRestore').addEventListener('click', async () => {
   const file = $('file').files[0];
-  if (!file) return say('Bitte zuerst eine Backup-Datei auswählen.', false);
+  if (!file) return say(t('msg.pickFile'), false);
   let backup;
   try {
     backup = JSON.parse(await file.text());
   } catch (e) {
-    return say('Datei ist kein gültiges JSON.', false);
+    return say(t('msg.badJson'), false);
   }
   if (!confirmReplace()) return;
   try {
     const n = await NOW.applyBackup(backup, restoreMode());
-    say(`${n} Seite(n) wiederhergestellt.`);
+    say(t('msg.restored', { n }));
     refreshStats();
   } catch (e) {
     say(e.message, false);
@@ -60,9 +60,9 @@ $('btnRestore').addEventListener('click', async () => {
 
 // ---- Alles löschen ------------------------------------------------------
 $('btnWipe').addEventListener('click', async () => {
-  if (!confirm('Wirklich ALLE Markierungen und Post-its löschen? Das lässt sich nur mit einem Backup rückgängig machen.')) return;
+  if (!confirm(t('msg.confirmWipe'))) return;
   await chrome.storage.local.remove(Object.keys(await NOW.allPages()));
-  say('Alle Notizen wurden gelöscht.');
+  say(t('msg.wiped'));
   refreshStats();
 });
 
@@ -73,10 +73,12 @@ $('extid').textContent = chrome.runtime.id;
 async function renderStatus() {
   const cfg = await NOWBackup.getCfg();
   const prov = NOWBackup.PROVIDERS[cfg.provider];
-  const parts = [];
-  parts.push(prov ? `Aktiver Anbieter: ${prov.label}` : 'Kein aktiver Anbieter, es wird nicht automatisch gesichert.');
-  if (cfg.lastBackup) parts.push('Letztes Backup: ' + new Date(cfg.lastBackup).toLocaleString('de-DE'));
-  $('cstatus').textContent = parts.join(' · ') + (cfg.lastError ? ` · Letzter Fehler: ${cfg.lastError}` : '');
+  const parts = [prov ? t('st.active', { name: prov.label }) : t('st.none')];
+  if (cfg.lastBackup) {
+    parts.push(t('st.last', { time: new Date(cfg.lastBackup).toLocaleString(NOW.lang === 'de' ? 'de-DE' : 'en-GB') }));
+  }
+  if (cfg.lastError) parts.push(t('st.error', { err: cfg.lastError }));
+  $('cstatus').textContent = parts.join(' · ');
   $('btnNow').disabled = $('btnCloudRestore').disabled = !prov;
 }
 
@@ -102,21 +104,21 @@ async function renderProviders() {
 
     const badge = document.createElement('span');
     badge.className = 'badge' + (connected ? ' on' : '');
-    badge.textContent = connected ? 'verbunden' : 'nicht verbunden';
+    badge.textContent = connected ? t('prov.connected') : t('prov.notConnected');
 
     row.append(radio, name, badge);
 
     if (prov.needsClientId) {
       const input = document.createElement('input');
       input.type = 'text';
-      input.placeholder = 'Client-ID / App-Key';
+      input.placeholder = t('prov.clientId');
       input.value = cfg[id + 'ClientId'] || '';
       input.addEventListener('change', () => NOWBackup.setCfg({ [id + 'ClientId']: input.value.trim() }));
       row.append(input);
     }
 
     const btn = document.createElement('button');
-    btn.textContent = connected ? 'Trennen' : 'Verbinden';
+    btn.textContent = connected ? t('prov.disconnect') : t('prov.connect');
     btn.addEventListener('click', async () => {
       btn.disabled = true;
       try {
@@ -124,15 +126,15 @@ async function renderProviders() {
           await prov.disconnect();
           const c = await NOWBackup.getCfg();
           if (c.provider === id) await NOWBackup.setCfg({ provider: null });
-          say(`${prov.label} getrennt.`, true, 'cmsg');
+          say(t('msg.disconnected', { name: prov.label }), true, 'cmsg');
         } else {
           const typed = row.querySelector('input[type=text]');
           if (typed) await NOWBackup.setCfg({ [id + 'ClientId']: typed.value.trim() });
           await prov.connect();
           await NOWBackup.setCfg({ provider: id });
-          say(`${prov.label} verbunden. Erstes Backup läuft …`, true, 'cmsg');
+          say(t('msg.connectedRunning', { name: prov.label }), true, 'cmsg');
           await NOWBackup.runBackup();
-          say(`${prov.label} verbunden und erstes Backup erstellt.`, true, 'cmsg');
+          say(t('msg.connectedDone', { name: prov.label }), true, 'cmsg');
         }
       } catch (e) {
         say(e.message || String(e), false, 'cmsg');
@@ -149,7 +151,7 @@ $('btnNow').addEventListener('click', async () => {
   $('btnNow').disabled = true;
   try {
     await NOWBackup.runBackup();
-    say('Backup in der Cloud gespeichert.', true, 'cmsg');
+    say(t('msg.cloudSaved'), true, 'cmsg');
   } catch (e) {
     say(e.message || String(e), false, 'cmsg');
   }
@@ -161,7 +163,7 @@ $('btnCloudRestore').addEventListener('click', async () => {
   $('btnCloudRestore').disabled = true;
   try {
     const n = await NOWBackup.restoreFromCloud(restoreMode());
-    say(`${n} Seite(n) aus der Cloud wiederhergestellt.`, true, 'cmsg');
+    say(t('msg.restoredCloud', { n }), true, 'cmsg');
     refreshStats();
   } catch (e) {
     say(e.message || String(e), false, 'cmsg');
@@ -175,6 +177,25 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (Object.keys(changes).some((k) => k.startsWith('page:'))) refreshStats();
 });
 
-refreshStats();
-renderProviders();
-renderStatus();
+// ---- Sprache --------------------------------------------------------------
+function applyLanguage() {
+  NOW.applyDom(document);
+  document.title = t('opt.title');
+  $('lang').value = NOW.langPref;
+}
+$('lang').addEventListener('change', () => NOW.setLang($('lang').value));
+NOW.onLangChange(() => {
+  applyLanguage();
+  $('msg').textContent = '';
+  $('cmsg').textContent = '';
+  renderProviders();
+  renderStatus();
+});
+
+(async () => {
+  await NOW.loadLang();
+  applyLanguage();
+  refreshStats();
+  renderProviders();
+  renderStatus();
+})();

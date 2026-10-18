@@ -1,11 +1,12 @@
 // Gemeinsame Konstanten und Backup-Helfer für Content-Script, Popup, Optionen und Service Worker.
 globalThis.NOW = {
   TYPES: {
-    comment:   { label: 'Kommentar', color: '#fde68a', icon: '💬' },
-    important: { label: 'Wichtig',   color: '#fdba74', icon: '⭐' },
-    alert:     { label: 'Achtung',   color: '#fca5a5', icon: '⚠️' },
-    question:  { label: 'Frage',     color: '#a5d8ff', icon: '❓' },
-    idea:      { label: 'Idee',      color: '#b2f2bb', icon: '💡' }
+    // Beschriftungen kommen aus i18n.js: NOW.typeLabel(key)
+    comment:   { color: '#fde68a', icon: '💬' },
+    important: { color: '#fdba74', icon: '⭐' },
+    alert:     { color: '#fca5a5', icon: '⚠️' },
+    question:  { color: '#a5d8ff', icon: '❓' },
+    idea:      { color: '#b2f2bb', icon: '💡' }
   },
   POSTIT_COLORS: {
     yellow: '#fff59d',
@@ -66,7 +67,7 @@ globalThis.NOW = {
   // mode: 'merge' (Standard) oder 'replace'. Gibt die Anzahl wiederhergestellter Seiten zurück.
   async applyBackup(backup, mode) {
     if (backup?.app !== 'note-o-web' || typeof backup.pages !== 'object' || !backup.pages) {
-      throw new Error('Das ist keine Note-o-Web-Sicherung.');
+      throw new Error(NOW.t('err.notBackup'));
     }
     const existing = await NOW.allPages();
     if (mode === 'replace') await chrome.storage.local.remove(Object.keys(existing));

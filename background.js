@@ -1,4 +1,4 @@
-importScripts('shared.js', 'backup.js');
+importScripts('shared.js', 'i18n.js', 'backup.js');
 
 // Tastenkürzel: neues Post-it auf dem aktiven Tab.
 chrome.commands.onCommand.addListener(async (command) => {

@@ -26,6 +26,9 @@ No account, no tracking, no server of ours. Everything lives in your browser.
 - Create a sticky note in any color
 - List of everything on the current page, click to jump to it
 
+**Languages**
+- English and German, switchable on the options page (or automatic by browser language). The change applies instantly, also on open pages
+
 ## Backup & restore
 
 Browsers get reset, so there are three ways to keep your notes safe:
@@ -53,7 +56,7 @@ Works in Chrome and other Chromium browsers (Edge, Brave, …). Google Drive bac
 
 ## Set up cloud backup
 
-Each provider needs a one-time, free app registration for your own account (the project ships no keys). See **[CLOUD-SETUP.md](CLOUD-SETUP.md)** for step-by-step instructions for Dropbox, OneDrive and Google Drive. The options page shows the redirect URL and extension ID you need for it.
+Each provider needs a one-time, free app registration for your own account (the project ships no keys). See **[CLOUD-SETUP.md](CLOUD-SETUP.md)** ([Deutsch](CLOUD-SETUP.de.md)) for step-by-step instructions for Dropbox, OneDrive and Google Drive. The options page shows the redirect URL and extension ID you need for it.
 
 ## Privacy
 
@@ -79,6 +82,7 @@ content.js         selection toolbar, highlights, fly-outs, sticky notes (Shadow
 background.js      shortcut + backup timer (service worker)
 backup.js          Dropbox / Google Drive / OneDrive (OAuth with PKCE, no secrets)
 shared.js          constants, backup format, merge/restore logic
+i18n.js            English / German texts and language switching
 popup.*  options.* popup and options page
 ```
 

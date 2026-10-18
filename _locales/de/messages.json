@@ -1,0 +1,8 @@
+{
+  "extDescription": {
+    "message": "Text auf Webseiten markieren, kommentieren und Post-its platzieren. Daten bleiben lokal, optional automatisches Cloud-Backup."
+  },
+  "cmdNewPostit": {
+    "message": "Neues Post-it auf dieser Seite"
+  }
+}

@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Note-o-Web",
-  "version": "0.2.0",
-  "description": "Text auf Webseiten markieren, kommentieren und Post-its platzieren. Daten bleiben lokal, optional automatisches Cloud-Backup.",
+  "version": "0.3.0",
+  "default_locale": "en",
+  "description": "__MSG_extDescription__",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -37,14 +38,14 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["shared.js", "content.js"],
+      "js": ["shared.js", "i18n.js", "content.js"],
       "run_at": "document_idle"
     }
   ],
   "commands": {
     "new-postit": {
       "suggested_key": { "default": "Ctrl+Shift+Y" },
-      "description": "Neues Post-it auf dieser Seite"
+      "description": "__MSG_cmdNewPostit__"
     }
   }
 }

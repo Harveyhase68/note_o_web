@@ -1,0 +1,8 @@
+{
+  "extDescription": {
+    "message": "Highlight text on webpages, add notes and sticky notes. Data stays local, with optional automatic cloud backup."
+  },
+  "cmdNewPostit": {
+    "message": "New sticky note on this page"
+  }
+}

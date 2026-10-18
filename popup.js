@@ -2,6 +2,9 @@
   const { TYPES, POSTIT_COLORS, pageKey } = NOW;
   const $ = (id) => document.getElementById(id);
 
+  await NOW.loadLang();
+  NOW.applyDom(document);
+
   $('opts').addEventListener('click', () => { chrome.runtime.openOptionsPage(); window.close(); });
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -12,7 +15,7 @@
   for (const [k, v] of Object.entries(POSTIT_COLORS)) {
     const b = document.createElement('button');
     b.style.background = v;
-    b.title = k;
+    b.title = NOW.colorLabel(k);
     b.addEventListener('click', async () => {
       await chrome.tabs.sendMessage(tab.id, { type: 'new-postit', color: k }).catch(() => {});
       window.close();
@@ -23,14 +26,15 @@
   const key = pageKey(tab.url);
   const r = await chrome.storage.local.get(key);
   const d = r[key] || {};
+  const typeKey = (h) => (TYPES[h.type] ? h.type : 'comment');
   const rows = [
     ...(d.highlights || []).map((h) => ({
-      id: h.id, color: (TYPES[h.type] || TYPES.comment).color,
-      title: h.exact, sub: h.note || (TYPES[h.type] || TYPES.comment).label
+      id: h.id, color: TYPES[typeKey(h)].color,
+      title: h.exact, sub: h.note || NOW.typeLabel(typeKey(h))
     })),
     ...(d.postits || []).map((p) => ({
       id: p.id, color: POSTIT_COLORS[p.color] || POSTIT_COLORS.yellow,
-      title: '🗒 ' + (p.text || '(leer)'), sub: 'Post-it'
+      title: '🗒 ' + (p.text || NOW.t('pop.emptyPostit')), sub: NOW.t('pop.postitSub')
     }))
   ];
   $('empty').hidden = rows.length > 0;

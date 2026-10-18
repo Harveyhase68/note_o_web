@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Note-o-Web</title>
@@ -31,20 +31,21 @@
   <h1>🗒 Note-o-Web</h1>
   <div class="url" id="url"></div>
 </header>
-<section id="na" class="na" hidden>Auf dieser Seite nicht verfügbar (nur http/https-Seiten).</section>
+<section id="na" class="na" hidden data-i18n="pop.na"></section>
 <div id="main" hidden>
   <section>
-    <h2>Neues Post-it</h2>
+    <h2 data-i18n="pop.newPostit"></h2>
     <div class="colors" id="colors"></div>
   </section>
   <section>
-    <h2>Auf dieser Seite</h2>
+    <h2 data-i18n="pop.onPage"></h2>
     <ul id="list"></ul>
-    <div class="empty" id="empty" hidden>Noch nichts. Text markieren, um zu starten.</div>
+    <div class="empty" id="empty" hidden data-i18n="pop.empty"></div>
   </section>
 </div>
-<footer><a id="opts">Backup, Download &amp; Restore …</a></footer>
+<footer><a id="opts" data-i18n="pop.options"></a></footer>
 <script src="shared.js"></script>
+<script src="i18n.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

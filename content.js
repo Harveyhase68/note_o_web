@@ -272,7 +272,7 @@
   function createHighlight(type) {
     if (!current) return;
     const a = anchorFromRange(current.range);
-    if (!a) { toast('Auswahl konnte nicht markiert werden'); return; }
+    if (!a) { toast(NOW.t('toast.noHighlight')); return; }
     const h = { id: uid(), type, ...a, note: '', created: Date.now() };
     data.highlights.push(h);
     renderHighlight(h);
@@ -302,7 +302,7 @@
     for (const m of marksOf(h.id)) m.setAttribute('data-now-type', key);
     const t = TYPES[key];
     card.style.setProperty('--c', t.color);
-    card.querySelector('.card-title').textContent = `${t.icon} ${t.label}`;
+    card.querySelector('.card-title').textContent = `${t.icon} ${NOW.typeLabel(key)}`;
     card.querySelectorAll('.tdot').forEach((d) => d.classList.toggle('on', d.dataset.key === key));
     save();
   }
@@ -311,7 +311,7 @@
     closeFlyout();
     mountHost();
     const t = TYPES[typeOf(h)];
-    const ta = el('textarea', { placeholder: 'Notiz hinzufügen …', rows: '3' });
+    const ta = el('textarea', { placeholder: NOW.t('fly.notePh'), rows: '3' });
     ta.value = h.note || '';
     ta.addEventListener('input', () => {
       h.note = ta.value;
@@ -322,13 +322,13 @@
     });
     const card = el('div', { class: 'card', style: `--c:${t.color}` },
       el('div', { class: 'card-head' },
-        el('span', { class: 'card-title' }, `${t.icon} ${t.label}`),
+        el('span', { class: 'card-title' }, `${t.icon} ${NOW.typeLabel(typeOf(h))}`),
         Object.entries(TYPES).map(([k, tt]) => el('button', {
-          class: 'tdot' + (k === typeOf(h) ? ' on' : ''), 'data-key': k, title: tt.label,
+          class: 'tdot' + (k === typeOf(h) ? ' on' : ''), 'data-key': k, title: NOW.typeLabel(k),
           style: `background:${tt.color}`, onclick: () => setHighlightType(h, k, card)
         })),
         el('button', {
-          class: 'icon-btn', title: 'Markierung löschen', onclick: () => {
+          class: 'icon-btn', title: NOW.t('fly.delete'), onclick: () => {
             unwrapHighlight(h.id);
             data.highlights = data.highlights.filter((x) => x.id !== h.id);
             save();
@@ -374,24 +374,29 @@
 
   const palette = el('div', { class: 'palette' },
     Object.entries(TYPES).map(([k, t]) => el('button', {
-      class: 'pt', style: `background:${t.color}`, onclick: () => createHighlight(k)
-    }, `${t.icon} ${t.label}`))
+      class: 'pt', style: `background:${t.color}`, onclick: () => createHighlight(k),
+      'data-i18n': 'type.' + k, 'data-icon': t.icon
+    }, `${t.icon} ${NOW.typeLabel(k)}`))
   );
   const markBtn = el('button', { class: 'tb', onclick: () => {
     palette.classList.toggle('open');
     markBtn.classList.toggle('on');
     placeNear(toolbar, current.range.getBoundingClientRect(), false);
-  } }, '🖍 Markieren');
+  }, 'data-i18n': 'tb.highlight', 'data-icon': '🖍' }, '🖍 ' + NOW.t('tb.highlight'));
+
+  const tbBtn = (key, icon, fn) => el('button', {
+    class: 'tb', onclick: fn, 'data-i18n': key, 'data-icon': icon
+  }, `${icon} ${NOW.t(key)}`);
 
   const toolbar = el('div', { class: 'toolbar' },
     el('div', { class: 'row' },
-      el('button', { class: 'tb', onclick: actCopy }, '📋 Kopieren'),
-      el('button', { class: 'tb', onclick: actSearch }, '🔍 Suchen'),
-      el('button', { class: 'tb', onclick: actTranslate }, '🌐 Übersetzen'),
-      el('button', { class: 'tb', onclick: actSummarize }, '✨ Zusammenfassen'),
+      tbBtn('tb.copy', '📋', actCopy),
+      tbBtn('tb.search', '🔍', actSearch),
+      tbBtn('tb.translate', '🌐', actTranslate),
+      tbBtn('tb.summarize', '✨', actSummarize),
       el('span', { class: 'sep' }),
       markBtn,
-      el('button', { class: 'tb', onclick: actPostit }, '🗒 Post-it')
+      tbBtn('tb.postit', '🗒', actPostit)
     ),
     palette
   );
@@ -413,7 +418,7 @@
 
   function actCopy() {
     const text = current.text;
-    const done = () => toast('In Zwischenablage kopiert');
+    const done = () => toast(NOW.t('toast.copied'));
     navigator.clipboard.writeText(text).then(done, () => {
       const ta = el('textarea', { style: 'position:fixed;opacity:0' });
       ta.value = text;
@@ -435,7 +440,8 @@
     hideToolbar();
   }
   function actPostit() {
-    const quote = '„' + current.text.slice(0, 500) + '“\n\n';
+    const [open, close] = NOW.lang === 'de' ? ['„', '“'] : ['“', '”'];
+    const quote = open + current.text.slice(0, 500) + close + '\n\n';
     createPostit('yellow', quote);
     hideToolbar();
     getSelection().removeAllRanges();
@@ -463,17 +469,16 @@
     const summary = summarize(current.text);
     hideToolbar();
     closeResult();
-    const body = el('div', { class: 'body' },
-      summary || 'Der markierte Text ist zu kurz für eine Zusammenfassung. Bitte mehr Text markieren (mindestens drei Sätze).');
+    const body = el('div', { class: 'body' }, summary || NOW.t('sum.tooShort'));
     resultCard = el('div', { class: 'card', style: '--c:#a78bfa' },
       el('div', { class: 'card-head' },
-        el('span', { class: 'card-title' }, '✨ Kurzfassung (lokal)'),
+        el('span', { class: 'card-title' }, '✨ ' + NOW.t('sum.title')),
         el('button', { class: 'icon-btn', onclick: closeResult }, '✕')
       ),
       body,
       summary && el('div', { class: 'acts' },
-        el('button', { class: 'tb', onclick: () => { navigator.clipboard.writeText(summary); toast('Kopiert'); } }, '📋 Kopieren'),
-        el('button', { class: 'tb', onclick: () => { createPostit('purple', summary); closeResult(); } }, '🗒 Als Post-it')
+        el('button', { class: 'tb', onclick: () => { navigator.clipboard.writeText(summary); toast(NOW.t('toast.copiedShort')); } }, '📋 ' + NOW.t('tb.copy')),
+        el('button', { class: 'tb', onclick: () => { createPostit('purple', summary); closeResult(); } }, '🗒 ' + NOW.t('sum.asPostit'))
       )
     );
     root.append(resultCard);
@@ -525,12 +530,12 @@
       style: `--c:${POSTIT_COLORS[color]};left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;z-index:${++z}`
     });
     const dots = Object.entries(POSTIT_COLORS).map(([k, v]) => el('button', {
-      class: 'dot', title: k, style: `background:${v}`,
+      class: 'dot', title: NOW.colorLabel(k), style: `background:${v}`,
       onclick: () => { p.color = k; node.style.setProperty('--c', v); save(); }
     }));
     const del = el('button', {
-      class: 'icon-btn', title: 'Post-it löschen', onclick: () => {
-        if (p.text.trim() && !confirm('Dieses Post-it löschen?')) return;
+      class: 'icon-btn', title: NOW.t('pi.delete'), onclick: () => {
+        if (p.text.trim() && !confirm(NOW.t('pi.confirmDelete'))) return;
         node.remove();
         postitNodes.delete(p.id);
         data.postits = data.postits.filter((x) => x.id !== p.id);
@@ -538,7 +543,7 @@
       }
     }, '×');
     const header = el('div', { class: 'ph' }, el('div', { class: 'dots' }, dots), del);
-    const ta = el('textarea', { placeholder: 'Notiz …', spellcheck: 'false' });
+    const ta = el('textarea', { placeholder: NOW.t('pi.notePh'), spellcheck: 'false' });
     ta.value = p.text;
     ta.addEventListener('input', () => { p.text = ta.value; save(); });
     node.addEventListener('pointerdown', () => { node.style.zIndex = ++z; });
@@ -643,8 +648,17 @@
     }, 800);
   }).observe(document.body, { childList: true, subtree: true });
 
+  // Sprache wechselt live (Auswahl auf der Optionsseite).
+  NOW.onLangChange(() => {
+    closeFlyout();
+    closeResult();
+    NOW.applyDom(root);
+    renderAllPostits();
+  });
+
   (async () => {
-    await loadData();
+    await Promise.all([loadData(), NOW.loadLang()]);
+    NOW.applyDom(root);
     if (data.highlights.length || data.postits.length) {
       mountHost();
       renderAllHighlights();
